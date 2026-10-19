@@ -1,0 +1,31 @@
+{
+  "name": "cani",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ask before you buy — an auditable YES/NO before money moves. AI owns the conversation; the ledger stays dumb.",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "start": "bun run src/server.ts",
+    "dev": "bun --watch run src/server.ts",
+    "test": "bun test",
+    "test:e2e": "playwright test",
+    "demo:video": "bun run scripts/record-demo.ts",
+    "check-paypal": "bun run scripts/check-paypal.ts",
+    "register-webhook": "bun run scripts/register-webhook.ts",
+    "rehearse-mcp": "bun run scripts/rehearse-mcp.ts",
+    "e2e:serve": "rm -rf e2e-data && bun run src/server.ts",
+    "validate": "bun run lint && bun run typecheck && bun run test"
+  },
+  "dependencies": {
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "bun-types": "^1.1.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

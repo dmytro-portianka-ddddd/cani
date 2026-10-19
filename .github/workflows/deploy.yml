@@ -1,0 +1,44 @@
+name: Validate and deploy to Render
+
+# Every push to main proves itself first (lint, types, unit suite,
+# browser flows), and only then asks Render to deploy via its deploy
+# hook. Set the repo secret RENDER_WEBHOOK from the Render
+# service's Settings → Deploy Hook, and turn OFF Render's own
+# auto-deploy so this workflow is the single trigger.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Lint, typecheck, unit tests
+        run: bun run validate
+      - name: Install Chromium for e2e
+        run: bunx playwright install --with-deps chromium
+      - name: Browser flows
+        run: bun run test:e2e
+
+  deploy:
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_WEBHOOK: ${{ secrets.RENDER_WEBHOOK }}
+        run: |
+          if [ -z "$RENDER_WEBHOOK" ]; then
+            echo "::error::RENDER_WEBHOOK secret is not set (Render → service → Settings → Deploy Hook)."
+            exit 1
+          fi
+          curl -fsSL -X POST "$RENDER_WEBHOOK"
+          echo "Render deploy triggered."

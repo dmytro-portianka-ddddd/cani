@@ -1,0 +1,12 @@
+node_modules/
+/data/
+e2e-data/
+test-results/
+playwright-report/
+demo-video/
+dist/
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store

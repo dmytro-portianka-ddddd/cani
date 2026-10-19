@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffd21f">
+<meta name="description" content="Cani — ask before you buy. An auditable YES or NO before money moves.">
+<title>Cani — ask before you buy</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">C</span><span>Cani</span><span class="name-sticker">Hi! My name is…</span></div>
+  <span class="window-label" id="windowLabel" data-testid="window-label">—</span>
+</header>
+
+<nav class="tabs" aria-label="Screens">
+  <button type="button" class="tab active" data-tab-btn="cani" data-testid="tab-cani" aria-selected="true">Cani</button>
+  <button type="button" class="tab" data-tab-btn="profile" data-testid="tab-profile" aria-selected="false">Profile</button>
+  <button type="button" class="tab" data-tab-btn="upload" data-testid="tab-upload" aria-selected="false">Upload</button>
+</nav>
+
+<main>
+  <p class="error-banner" id="errorBanner" data-testid="error-banner" hidden></p>
+
+  <section class="hero" aria-label="Headroom" data-tab="cani">
+    <p class="hero-label">You can spend</p>
+    <p class="shame-score" id="shameScore" data-testid="shame-score" hidden></p>
+    <p class="kept-chip" id="keptChip" data-testid="kept-amount" hidden></p>
+    <p class="hero-amount" id="headroomAmount" data-testid="headroom-amount">—</p>
+    <div class="bars" id="bars">
+      <div class="bar-row"><span>Income</span><div class="bar"><i id="barIncome"></i></div><b id="valIncome" data-testid="income-value">—</b></div>
+      <div class="bar-row"><span>Committed</span><div class="bar"><i id="barCommitted"></i></div><b id="valCommitted" data-testid="committed-value">—</b></div>
+      <div class="bar-row"><span>Spent</span><div class="bar"><i id="barSpent"></i></div><b id="valSpent" data-testid="spent-value">—</b></div>
+    </div>
+  </section>
+
+  <section class="panel levels" aria-label="Upload" data-tab="upload">
+    <h2>Upload — show Cani your money</h2>
+    <ol class="level-list">
+      <li><b>Show a typical month</b> <span class="level-state" id="levelMonth" data-testid="level-month">not yet</span>
+        <p>Upload a bank CSV (date, description, amount). Cani proposes your books — nothing lands until you confirm each committed payment.</p>
+        <input type="file" id="csvFile" data-testid="csv-file" accept=".csv,text/csv">
+        <button type="button" id="sampleMonth" data-testid="sample-month">Use a sample month</button>
+        <div id="proposal" data-testid="month-proposal" hidden>
+          <p id="proposalSummary" data-testid="proposal-summary"></p>
+          <div id="candidateList" data-testid="candidate-list"></div>
+          <button type="button" id="applyMonth" data-testid="apply-month">Confirm &amp; add to my books</button>
+          <p class="meta-line" id="applyResult" data-testid="apply-result"></p>
+        </div></li>
+      <li><b>Connect PayPal</b> <span class="level-state" id="levelPaypal" data-testid="level-paypal">checking…</span>
+        <p id="paypalNote" data-testid="paypal-note">PayPal powers checkout and funding rails. It cannot read your bank statements — your books stay Level 2 + your word.</p></li>
+    </ol>
+  </section>
+
+  <section class="ask-card" aria-label="Ask Cani" data-tab="cani">
+    <h1>Can I buy this?</h1>
+    <form id="askForm">
+      <label>What is it?
+        <input id="askLabel" data-testid="ask-label" type="text" placeholder="Aeron Deck" maxlength="120" autocomplete="off">
+      </label>
+      <label>How much? ($)
+        <input id="askAmount" data-testid="ask-amount" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="2800" required>
+      </label>
+      <label>Where? (optional — gas, pharmacy &amp; grocery merchants ride the essential lane)
+        <input id="askMerchant" data-testid="ask-merchant" type="text" placeholder="CVS Pharmacy" maxlength="120" autocomplete="off">
+      </label>
+      <label>Cart items (optional, one per line: name amount — alcohol &amp; sweets don't ride the lane)
+        <textarea id="askItems" data-testid="ask-items" rows="3" placeholder="Milk 4.50&#10;Eggs 6.20&#10;Beer 12.99"></textarea>
+      </label>
+      <button type="submit" class="ask-btn" id="askBtn" data-testid="ask-submit">Ask my manager</button>
+    </form>
+  </section>
+
+  <section class="verdict" data-tab="cani" data-preserve-state id="verdict" hidden aria-live="polite">
+    <p class="verdict-word" id="verdictWord" data-testid="verdict-word">NO</p>
+    <p class="verdict-duo" id="verdictDuo" data-testid="verdict-duo" hidden>
+      <span data-testid="books-verdict"></span> · <span data-testid="manager-verdict"></span>
+    </p>
+    <p class="verdict-sub" id="verdictSub" data-testid="verdict-sub"></p>
+    <div class="bars-box" id="verdictBars" data-testid="verdict-bars" hidden>
+      <p class="bars-label">The manager, in bars</p>
+      <p class="bars-lines" id="barsLines" data-testid="bars-lines"></p>
+    </div>
+    <ul class="reasons" id="verdictReasons" data-testid="verdict-reasons"></ul>
+    <p class="path" id="verdictPath" data-testid="verdict-path" hidden></p>
+    <button type="button" class="record-btn" id="recordBtn" data-testid="record-purchase" hidden>Record this purchase</button>
+    <button type="button" class="shame-btn" id="shameBtn" data-testid="shame-bypass" hidden>Bypass anyway — shame points apply</button>
+    <button type="button" class="paypal-btn" id="paypalBtn" data-testid="paypal-pay" hidden>Pay with PayPal</button>
+    <div class="paypal-area" id="paypalArea" data-testid="paypal-area" hidden>
+      <p id="paypalNote2" data-testid="paypal-note2"></p>
+      <a id="paypalApprove" data-testid="paypal-approve" href="#" target="_blank" rel="noopener" hidden>Approve on PayPal</a>
+      <button type="button" id="paypalCapture" data-testid="paypal-capture" hidden>Complete capture</button>
+    </div>
+    <p class="no-override" id="noOverride" data-testid="no-override" hidden>There is no override. That is the point.</p>
+  </section>
+
+  <section class="panel" aria-label="Committed payments" data-tab="cani">
+    <h2>Committed — confirmed by you</h2>
+    <ul class="rows" id="committedList" data-testid="committed-list"></ul>
+    <h3>Planned</h3>
+    <ul class="rows" id="plannedList" data-testid="planned-list"></ul>
+  </section>
+
+  <section class="panel" aria-label="Record spending" data-tab="cani">
+    <h2>Spent something?</h2>
+    <form id="spendForm" class="spend-form">
+      <input id="spendLabel" data-testid="spend-label" type="text" placeholder="Groceries" maxlength="120" autocomplete="off">
+      <input id="spendAmount" data-testid="spend-amount" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0.00" required>
+      <button type="submit" data-testid="add-spend">Add spend</button>
+    </form>
+  </section>
+
+  <section class="panel deeper" id="deeperPanel" aria-label="Deeper mode" data-tab="profile">
+    <h2>Deeper mode — who I am, who I want to be</h2>
+    <p class="meta-line">Optional. Shapes how hard Cani leans — with every adjustment named on the verdict. The books alone always get their say too.</p>
+    <div class="character-box">
+      <svg id="charScene" data-testid="character-scene" viewBox="0 0 300 170" role="img" aria-label="Your character, built from your answers"></svg>
+      <p class="char-caption" id="charCaption" data-testid="character-caption">Pick answers below — your character shows up here.</p>
+    </div>
+    <div class="draft-box">
+      <label for="freeText">Tell Cani about yourself — it drafts, you decide</label>
+      <textarea id="freeText" data-testid="free-text" rows="3" maxlength="2000" placeholder="I'm 56, house is paid off here in Mississippi, no kids at home. I want to enjoy life a bit more this year — honestly I'm a spender."></textarea>
+      <button type="button" id="draftBtn" data-testid="draft-profile">Draft my profile</button>
+      <p class="draft-note" id="draftNote" data-testid="draft-note" hidden></p>
+    </div>
+    <div class="blot-box">
+      <p class="tree-q">Or take the money blot — five cards, no wrong answers, not a diagnosis</p>
+      <button type="button" id="blotStart" data-testid="blot-start">Take the money blot</button>
+      <div id="blotArea" data-testid="blot-area" hidden>
+        <svg class="blot-img" viewBox="0 0 200 120" aria-hidden="true"><path d="M100 12c22 14 46 10 52 30 6 18-10 24-6 40 4 18-16 26-30 22-20-6-22 10-38 6C58 106 44 88 50 68c5-16 24-14 28-28C82 24 86 4 100 12z" fill="#e8b33c" opacity="0.85"/></svg>
+        <p class="blot-prompt" id="blotPrompt" data-testid="blot-prompt"></p>
+        <div class="chips" id="blotChoices" data-testid="blot-choices"></div>
+        <p class="meta-line" id="blotProgress" data-testid="blot-progress"></p>
+      </div>
+      <div id="blotResult" data-testid="blot-result" hidden>
+        <ul class="reasons" id="blotReasons" data-testid="blot-reasons"></ul>
+        <button type="button" id="blotApply" data-testid="blot-apply">Use this suggestion in the tree</button>
+      </div>
+    </div>
+    <div class="tree" id="profileTree">
+      <div class="tree-step"><p class="tree-q">1 · I am in my</p><div class="chips" data-field="ageBand" data-testid="group-ageBand">
+        <button type="button" data-testid="chip-ageBand-20s" data-value="20s">20s</button><button type="button" data-testid="chip-ageBand-30s-40s" data-value="30s-40s">30s–40s</button><button type="button" data-testid="chip-ageBand-50s" data-value="50s">50s</button><button type="button" data-testid="chip-ageBand-60-plus" data-value="60-plus">60+</button>
+      </div></div>
+      <div class="tree-step"><p class="tree-q">2 · My home is</p><div class="chips" data-field="housing" data-testid="group-housing">
+        <button type="button" data-testid="chip-housing-renting" data-value="renting">Renting</button><button type="button" data-testid="chip-housing-mortgage" data-value="mortgage">Mortgage</button><button type="button" data-testid="chip-housing-paid-off" data-value="paid-off">Paid off</button><button type="button" data-testid="chip-housing-family-home" data-value="family-home">Family home</button>
+      </div></div>
+      <div class="tree-step"><p class="tree-q">3 · Depending on me</p><div class="chips" data-field="dependents" data-testid="group-dependents">
+        <button type="button" data-testid="chip-dependents-none" data-value="none">Just me / us</button><button type="button" data-testid="chip-dependents-kids-daycare" data-value="kids-daycare">Kids in daycare</button><button type="button" data-testid="chip-dependents-kids-school" data-value="kids-school">School-age kids</button><button type="button" data-testid="chip-dependents-supporting-parents" data-value="supporting-parents">My parents</button><button type="button" data-testid="chip-dependents-kids-and-parents" data-value="kids-and-parents">Kids + parents</button>
+      </div></div>
+      <div class="tree-step"><p class="tree-q">4 · My home team</p><div class="chips" data-field="familyStatus" data-testid="group-familyStatus">
+        <button type="button" data-testid="chip-familyStatus-single" data-value="single">Single</button><button type="button" data-testid="chip-familyStatus-dating" data-value="dating">Dating</button><button type="button" data-testid="chip-familyStatus-married-dual-income" data-value="married-dual-income">Married · two incomes</button><button type="button" data-testid="chip-familyStatus-married-stay-home" data-value="married-stay-home">Married · stay-at-home partner</button><button type="button" data-testid="chip-familyStatus-single-parent" data-value="single-parent">Single parent</button><button type="button" data-testid="chip-familyStatus-co-parenting" data-value="co-parenting">Co-parenting</button><button type="button" data-testid="chip-familyStatus-other" data-value="other">It's complicated</button>
+      </div></div>
+      <div class="tree-step"><p class="tree-q">5 · I live in</p>
+        <select id="profileState" data-testid="profile-state" aria-label="US state"><option value="">Choose a state…</option></select>
+      </div>
+      <div class="tree-branch"><p class="tree-q branch-label">Who I want to be</p>
+      <div class="tree-step"><p class="tree-q">6 · My goal is</p><div class="chips" data-field="goal" data-testid="group-goal">
+        <button type="button" data-testid="chip-goal-debt-free" data-value="debt-free">Debt-free</button><button type="button" data-testid="chip-goal-buy-home" data-value="buy-home">Buy a home</button><button type="button" data-testid="chip-goal-retire-well" data-value="retire-well">Retire well</button><button type="button" data-testid="chip-goal-enjoy-now" data-value="enjoy-now">Enjoy life now</button><button type="button" data-testid="chip-goal-support-family" data-value="support-family">Support family</button>
+      </div></div>
+      <div class="tree-step"><p class="tree-q">7 · Over the next</p><div class="chips" data-field="horizon" data-testid="group-horizon">
+        <button type="button" data-testid="chip-horizon-this-year" data-value="this-year">This year</button><button type="button" data-testid="chip-horizon-3-5-years" data-value="3-5-years">3–5 years</button><button type="button" data-testid="chip-horizon-10-plus-years" data-value="10-plus-years">10+ years</button>
+      </div></div>
+      <div class="tree-step"><p class="tree-q">8 · Honestly, I spend</p><div class="chips" data-field="temperament" data-testid="group-temperament">
+        <button type="button" data-testid="chip-temperament-careful" data-value="careful">Carefully</button><button type="button" data-testid="chip-temperament-balanced" data-value="balanced">Balanced</button><button type="button" data-testid="chip-temperament-live-a-little" data-value="live-a-little">I live a little</button>
+      </div></div>
+      </div>
+    </div>
+      <div class="tree-step sliders"><p class="tree-q">9 · My dials — drag them to where they honestly sit</p>
+        <label class="dial">Security <span>↔</span> Freedom <input type="range" min="0" max="100" value="50" id="dialSecurity" data-testid="dial-security"></label>
+        <label class="dial">Save <span>↔</span> Enjoy <input type="range" min="0" max="100" value="50" id="dialEnjoy" data-testid="dial-enjoy"></label>
+        <label class="dial">Family first <span>↔</span> My goals <input type="range" min="0" max="100" value="50" id="dialFamily" data-testid="dial-family"></label>
+      </div>
+    <label class="candidate"><input type="checkbox" id="adjustmentEnabled" data-testid="adjustment-enabled" checked> Let my profile shade verdicts (off = books decide alone)</label>
+    <button type="button" class="save-profile" id="saveProfile" data-testid="save-profile" disabled>Save my profile</button>
+    <div class="goal-health" id="goalHealth" data-testid="goal-health" hidden>
+      <p class="archetype" id="goalHealthTitle" data-testid="goal-health-title"></p>
+      <p id="goalHealthText" data-testid="goal-health-text"></p>
+      <button type="button" id="realignBtn" data-testid="realign-goal" hidden>Realign my goal</button>
+    </div>
+    <div class="insight" id="insight" data-testid="insight" hidden>
+      <p class="archetype" id="insightArchetype" data-testid="insight-archetype"></p>
+      <ul class="reasons" id="insightNotes" data-testid="insight-notes"></ul>
+      <p class="meta-line" id="insightMeta" data-testid="insight-meta"></p>
+    </div>
+  </section>
+
+
+  <section class="panel" aria-label="Essential lanes" data-tab="profile">
+    <h2>Essential lanes — always allowed, within caps</h2>
+    <p class="meta-line">Fuel, medicine, and groceries at known merchants skip the ask. Above the cap, or with alcohol/sweets in the cart, the normal check applies. No shame in this lane, ever.</p>
+    <div id="essentialsList" data-testid="essentials-list"></div>
+    <button type="button" id="saveEssentials" data-testid="save-essentials">Save lanes</button>
+  </section>
+
+  <section class="panel" aria-label="Audit trail" data-tab="cani">
+    <h2>Every verdict, on the record</h2>
+    <ul class="rows" id="decisionList" data-testid="decision-list"></ul>
+  </section>
+
+  <footer>Numbers by the deterministic engine. The AI never touches a verdict.</footer>
+</main>
+<script src="/app.js" defer></script>
+</body>
+</html>

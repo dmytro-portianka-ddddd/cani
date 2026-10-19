@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: cani
+    runtime: node
+    buildCommand: curl -fsSL https://bun.sh/install | bash && export PATH="$HOME/.bun/bin:$PATH" && bun install
+    autoDeploy: false # GitHub Actions is the single deploy trigger (deploy hook)
+    startCommand: export PATH="$HOME/.bun/bin:$PATH" && bun start
+    healthCheckPath: /api/state
+    disk:
+      name: cani-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: CANI_DATA_DIR
+        value: /var/data
+      - key: PORT
+        value: "8787"
+      - key: CANI_PAYPAL_CLIENT_ID
+        sync: false
+      - key: CANI_PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: CANI_PAYPAL_MODE
+        value: sandbox
+      - key: CANI_PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: CANI_AI_API_KEY
+        sync: false
+      - key: CANI_PUBLIC_URL
+        sync: false
