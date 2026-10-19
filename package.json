@@ -12,6 +12,7 @@
     "test": "bun test",
     "test:e2e": "playwright test",
     "demo:video": "bun run scripts/record-demo.ts",
+    "demo:muse": "bun run scripts/record-muse.ts",
     "check-paypal": "bun run scripts/check-paypal.ts",
     "register-webhook": "bun run scripts/register-webhook.ts",
     "rehearse-mcp": "bun run scripts/rehearse-mcp.ts",
